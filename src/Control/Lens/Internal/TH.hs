@@ -22,7 +22,11 @@
 module Control.Lens.Internal.TH where
 
 import Data.Functor.Contravariant
+import qualified Data.Set as Set
+import Data.Set (Set)
 import Language.Haskell.TH
+import qualified Language.Haskell.TH.Datatype as D
+import qualified Language.Haskell.TH.Datatype.TyVarBndr as D
 import Language.Haskell.TH.Syntax
 #ifndef CURRENT_PACKAGE_KEY
 import Data.Version (showVersion)
@@ -87,6 +91,39 @@ unfoldType = go []
     go acc (AppKindT ty _)  = go acc ty
 #endif
     go acc ty               = (ty, acc)
+
+-- | Construct a 'Type' using the datatype's type constructor and type
+-- parameters. Unlike 'D.datatypeType', kind signatures are preserved.
+datatypeTypeKinded :: D.DatatypeInfo -> Type
+datatypeTypeKinded di
+  = foldl AppT (ConT (D.datatypeName di))
+  $ D.datatypeInstTypes di
+
+-- | Template Haskell wants type variables declared in a forall, so
+-- we find all free type variables in a given type and declare them.
+quantifyType :: Cxt -> Type -> Type
+quantifyType = quantifyType' Set.empty
+
+-- | This function works like 'quantifyType' except that it takes
+-- a list of variables to exclude from quantification.
+quantifyType' :: Set Name -> Cxt -> Type -> Type
+quantifyType' exclude c t = ForallT vs c t
+  where
+  vs = filter (\tvb -> D.tvName tvb `Set.notMember` exclude)
+     $ D.changeTVFlags D.SpecifiedSpec
+     $ D.freeVariablesWellScoped (t:concatMap predTypes c) -- stable order
+
+  predTypes :: Pred -> [Type]
+#if MIN_VERSION_template_haskell(2,10,0)
+  predTypes p = [p]
+#else
+  predTypes (ClassP _ ts)  = ts
+  predTypes (EqualP t1 t2) = [t1, t2]
+#endif
+
+-- | Convert a 'TyVarBndr' into its corresponding 'Type'.
+tvbToType :: D.TyVarBndr_ flag -> Type
+tvbToType = D.elimTV VarT (SigT . VarT)
 
 ------------------------------------------------------------------------
 -- Manually quoted names

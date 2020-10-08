@@ -1,3 +1,9 @@
 packages: .
           ./examples
           ./lens-properties
+
+-- TODO: Temporary until https://github.com/glguy/th-abstraction/issues/84 is fixed
+source-repository-package
+  type: git
+  location: https://github.com/glguy/th-abstraction
+  tag: 873002c6f502d35c1533c6c0e07009b0f40a4995

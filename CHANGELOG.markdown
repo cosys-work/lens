@@ -1,9 +1,6 @@
 4.20 [2020.xx.yy]
 -----------------
 * Support building with GHC 9.0.
-* Add `Control.Lens.Profunctor` with conversion functions to and from
-  profunctor optic representation
-* Mark `Control.Lens.Equality` as Trustworthy
 * The `Swapped` type class is removed in favor of `Swap` from the `assoc` package
 * The `Strict` type class is removed in favor of `Strict` from the `strict` package
 
@@ -24,6 +21,16 @@
     swapped = iso Swap.swap Swap.swap
   #endif
   ```
+* Make the functions in `Control.Lens.TH` work more robustly with poly-kinded
+  data types. This can cause a breaking change under certain situations:
+  * TH-generated optics are now much more likely to generate kind signatures,
+    so you may have to enable `KindSignatures` (or `PolyKinds`, for poly-kinded
+    data types) in places where you did not have to previously.
+  * Because TH-generated optics now quantify more kind variables than they did
+    previously, this can affect the order of visible type applications.
+* Add `Control.Lens.Profunctor` with conversion functions to and from
+  profunctor optic representation
+* Mark `Control.Lens.Equality` as Trustworthy
 
 4.19.2 [2020.04.15]
 -------------------

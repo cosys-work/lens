@@ -8,7 +8,7 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.10.2
+# version: 0.10.3
 #
 version: ~> 1.0
 language: c
@@ -101,6 +101,7 @@ before_install:
 install:
   - ${CABAL} --version
   - echo "$(${HC} --version) [$(${HC} --print-project-git-commit-id 2> /dev/null || echo '?')]"
+  - "echo 'jobs: 2' >> $CABALHOME/config"
   - |
     echo "program-default-options"                >> $CABALHOME/config
     echo "  ghc-options: $GHCJOBS +RTS -M6G -RTS" >> $CABALHOME/config
@@ -125,6 +126,10 @@ install:
   - if [ $HCNUMVER -ge 80200 ] ; then echo 'package lens-properties' >> cabal.project ; fi
   - "if [ $HCNUMVER -ge 80200 ] ; then echo '  ghc-options: -Werror=missing-methods' >> cabal.project ; fi"
   - |
+    echo "source-repository-package"                            >> cabal.project
+    echo "  type:     git"                                      >> cabal.project
+    echo "  location: https://github.com/glguy/th-abstraction"  >> cabal.project
+    echo "  tag:      873002c6f502d35c1533c6c0e07009b0f40a4995" >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(lens|lens-examples|lens-properties)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
@@ -134,7 +139,6 @@ install:
   - ${CABAL} v2-freeze $WITHCOMPILER ${TEST} ${BENCH}
   - "cat cabal.project.freeze | sed -E 's/^(constraints: *| *)//' | sed 's/any.//'"
   - rm  cabal.project.freeze
-  - travis_wait 40 ${CABAL} v2-build $WITHCOMPILER ${TEST} ${BENCH} --dep -j2 all
 script:
   - DISTDIR=$(mktemp -d /tmp/dist-test.XXXX)
   # Packaging...
@@ -161,6 +165,10 @@ script:
   - if [ $HCNUMVER -ge 80200 ] ; then echo 'package lens-properties' >> cabal.project ; fi
   - "if [ $HCNUMVER -ge 80200 ] ; then echo '  ghc-options: -Werror=missing-methods' >> cabal.project ; fi"
   - |
+    echo "source-repository-package"                            >> cabal.project
+    echo "  type:     git"                                      >> cabal.project
+    echo "  location: https://github.com/glguy/th-abstraction"  >> cabal.project
+    echo "  tag:      873002c6f502d35c1533c6c0e07009b0f40a4995" >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(lens|lens-examples|lens-properties)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
@@ -180,5 +188,5 @@ script:
   # haddock...
   - ${CABAL} v2-haddock $WITHCOMPILER --with-haddock $HADDOCK ${TEST} ${BENCH} all
 
-# REGENDATA ("0.10.2",["--output=.travis.yml","--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.10.3",["--output=.travis.yml","--config=cabal.haskell-ci","cabal.project"])
 # EOF

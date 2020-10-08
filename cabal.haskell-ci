@@ -3,3 +3,8 @@ unconstrained:          False
 hlint:                  True
 apt:                    freeglut3-dev
 irc-channels:           irc.freenode.org#haskell-lens
+
+-- TODO: Temporary until https://github.com/glguy/th-abstraction/issues/84 is fixed
+jobs:                   2
+jobs-selection:         any
+install-dependencies:   False
